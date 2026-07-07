@@ -1,0 +1,375 @@
+<style>
+  :root {
+    --paper: #f7f8f6;
+    --surface: #ffffff;
+    --ink: #20262e;
+    --muted: #67707c;
+    --line: #dfe3e0;
+    --accent: #2451b3;
+    --accent-soft: rgba(36, 81, 179, 0.08);
+    --publish: #1f8a63;
+    --publish-soft: rgba(31, 138, 99, 0.1);
+    --blocked: #b5473a;
+    --blocked-soft: rgba(181, 71, 58, 0.09);
+    --terminal: #1a1f26;
+    --terminal-ink: #c9d4de;
+    --terminal-dim: #6b7887;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14171c;
+      --surface: #1c2129;
+      --ink: #dee4ea;
+      --muted: #8b96a3;
+      --line: #2b323c;
+      --accent: #7ea3e8;
+      --accent-soft: rgba(126, 163, 232, 0.1);
+      --publish: #4bb389;
+      --blocked: #d4776a;
+      --terminal: #10141a;
+    }
+  }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+      "PingFang SC", "Hiragino Sans GB", sans-serif;
+    line-height: 1.75;
+  }
+  .serif {
+    font-family: "Songti SC", "Noto Serif SC", "Source Han Serif SC",
+      Georgia, "Times New Roman", serif;
+  }
+  .mono {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  .page { max-width: 880px; margin: 0 auto; padding: 56px 24px 96px; }
+  section { margin-top: 64px; }
+  p { max-width: 62ch; }
+
+  .eyebrow {
+    font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600;
+  }
+  h1 {
+    font-size: clamp(30px, 5vw, 44px); line-height: 1.25; font-weight: 700;
+    margin: 10px 0 14px; letter-spacing: 0.01em; text-wrap: balance;
+  }
+  .lede { font-size: 17px; color: var(--muted); margin: 0; }
+  .lede em { font-style: normal; color: var(--ink); }
+  h2 {
+    font-size: 24px; font-weight: 700; margin: 0 0 6px;
+    letter-spacing: 0.01em; text-wrap: balance;
+  }
+  .kicker { color: var(--muted); font-size: 14.5px; margin: 0 0 22px; }
+
+  .selfref {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 22px; padding: 7px 14px; border-radius: 999px;
+    background: var(--publish-soft); color: var(--publish);
+    font-size: 13px; font-weight: 600;
+  }
+  .selfref .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--publish); }
+
+  /* —— hero:终端 → 页面 的转变 —— */
+  .transform {
+    display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px;
+    align-items: stretch; margin-top: 40px;
+  }
+  @media (max-width: 640px) { .transform { grid-template-columns: 1fr; } }
+  .panel { border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
+  .panel .titlebar {
+    display: flex; align-items: center; gap: 6px;
+    padding: 9px 12px; font-size: 11.5px;
+  }
+  .titlebar .dots { display: flex; gap: 5px; }
+  .titlebar .dots i { width: 9px; height: 9px; border-radius: 50%; display: block; }
+
+  .term { background: var(--terminal); color: var(--terminal-ink); }
+  .term .titlebar { background: rgba(255,255,255,0.05); color: var(--terminal-dim); }
+  .term .dots i { background: #3d4854; }
+  .term pre {
+    margin: 0; padding: 16px 18px; font-size: 12.5px; line-height: 1.9;
+    overflow-x: auto;
+  }
+  .term .prompt { color: var(--terminal-dim); }
+  .term .cmd { color: var(--terminal-ink); }
+  .term .ok { color: #58b98d; }
+  .term .url2 { color: #82aae0; text-decoration: underline; text-underline-offset: 3px; }
+
+  .arrow {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 6px; color: var(--accent);
+    font-size: 12px; font-weight: 600; padding: 0 4px;
+  }
+  .arrow svg { width: 34px; height: 16px; }
+  .arrow line, .arrow path { stroke: var(--accent); stroke-width: 2; fill: none; }
+  @media (max-width: 640px) { .arrow svg { transform: rotate(90deg); } }
+
+  .browser { background: var(--surface); }
+  .browser .titlebar { background: var(--accent-soft); color: var(--muted); }
+  .browser .dots i { background: var(--line); }
+  .browser .addr {
+    flex: 1; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 5px; padding: 2px 10px; font-size: 11px; color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .browser .mock { padding: 16px 18px; display: grid; gap: 9px; }
+  .mock .mline { height: 9px; border-radius: 4px; background: var(--line); }
+  .mock .mline.title { width: 55%; height: 12px; background: var(--accent); opacity: 0.85; }
+  .mock .mbars { display: flex; gap: 6px; align-items: flex-end; height: 44px; margin-top: 4px; }
+  .mock .mbars i { flex: 1; border-radius: 3px 3px 0 0; background: var(--accent); opacity: 0.75; display: block; }
+
+  /* —— 特征三联 —— */
+  .traits { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+  .trait {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; padding: 20px 22px;
+  }
+  .trait .t-term { font-size: 15.5px; font-weight: 700; margin: 0 0 6px; }
+  .trait .t-term .mono { color: var(--accent); font-size: 13px; font-weight: 600; }
+  .trait p { margin: 0; font-size: 13.5px; color: var(--muted); line-height: 1.7; }
+
+  /* —— 交互演示公共 —— */
+  .demo {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; padding: 22px 24px; margin-top: 8px;
+  }
+  .demo .demo-tag {
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--publish); font-weight: 700;
+  }
+  button {
+    font: inherit; font-size: 13.5px; font-weight: 600;
+    padding: 8px 16px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+  }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button:hover { border-color: var(--accent); }
+  button.primary:hover { opacity: 0.9; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* 版本演示 */
+  .vdemo { display: grid; grid-template-columns: 1fr 220px; gap: 22px; margin-top: 14px; }
+  @media (max-width: 640px) { .vdemo { grid-template-columns: 1fr; } }
+  .vdemo .browser { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .vpill {
+    font-size: 11.5px; font-weight: 700; color: var(--accent);
+    background: var(--accent-soft); border-radius: 999px; padding: 1px 9px;
+  }
+  .vside { display: flex; flex-direction: column; gap: 12px; justify-content: center; }
+  .vside .note { font-size: 13px; color: var(--muted); line-height: 1.65; margin: 0; }
+  .vside .note strong { color: var(--publish); }
+  .vlog { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 5px; font-size: 12px; color: var(--muted); }
+  .vlog li::before { content: "·"; color: var(--accent); margin-right: 6px; }
+
+  /* CSP 实验 */
+  .csp-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0; }
+  .console {
+    background: var(--terminal); color: var(--terminal-ink);
+    border-radius: 8px; padding: 14px 16px; font-size: 12.5px;
+    line-height: 1.9; min-height: 72px; overflow-x: auto;
+  }
+  .console .hint { color: var(--terminal-dim); }
+  .console .pass { color: #58b98d; }
+  .console .fail { color: #e08578; }
+
+  /* 约束表 */
+  .rules { display: grid; gap: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
+  .rule { display: grid; grid-template-columns: 170px 1fr; gap: 18px; padding: 14px 20px; border-bottom: 1px solid var(--line); }
+  .rule:last-child { border-bottom: none; }
+  @media (max-width: 560px) { .rule { grid-template-columns: 1fr; gap: 2px; } }
+  .rule dt { font-weight: 700; font-size: 14px; }
+  .rule dd { margin: 0; font-size: 13.5px; color: var(--muted); }
+  .rule dd .mono { font-size: 12px; }
+
+  /* 适用场景 */
+  .fits { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 640px) { .fits { grid-template-columns: 1fr; } }
+  .fit { border-left: 3px solid var(--accent); background: var(--surface); border-radius: 0 10px 10px 0; padding: 16px 20px; }
+  .fit h3 { margin: 0 0 4px; font-size: 15px; }
+  .fit p { margin: 0; font-size: 13.5px; color: var(--muted); }
+  .unfit { border-left-color: var(--blocked); }
+  .unfit h3 { color: var(--blocked); }
+
+  footer.colophon {
+    margin-top: 72px; padding-top: 20px; border-top: 1px solid var(--line);
+    font-size: 13px; color: var(--muted); max-width: 62ch;
+  }
+  footer.colophon .mono { font-size: 12px; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .mock .mbars i { transition: height 0.45s ease; }
+  }
+</style>
+
+<div class="page">
+
+  <header>
+    <span class="eyebrow mono">OpenArtifacts · 概念指南</span>
+    <h1 class="serif">Artifact:让会话的产出,活在一个链接里</h1>
+    <p class="lede">终端擅长对话,不擅长呈现。Artifact 把一段会话的成果发布成
+      <em>托管在固定 URL 上的活页面</em>——会话继续,页面原地更新,链接始终是同一个。</p>
+    <span class="selfref"><span class="dot"></span>你现在看的这个页面,本身就是一个 artifact</span>
+  </header>
+
+  <div class="transform" role="img" aria-label="终端会话经发布变成浏览器中的页面">
+    <div class="panel term">
+      <div class="titlebar"><span class="dots"><i></i><i></i><i></i></span>&nbsp;终端 · 会话进行中</div>
+      <pre class="mono"><span class="prompt">$</span> <span class="cmd">claude</span>
+<span class="prompt">&gt;</span> <span class="cmd">把本周部署失败做成仪表盘 artifact</span>
+<span class="ok">⏺ 已发布: 部署失败率周报 (v1)</span>
+  <span class="url2">http://127.0.0.1:8787/a/b4a465ef…</span></pre>
+    </div>
+    <div class="arrow" aria-hidden="true">
+      <svg viewBox="0 0 34 16"><line x1="0" y1="8" x2="26" y2="8"/><path d="M22 3 L30 8 L22 13"/></svg>
+      <span>发布</span>
+    </div>
+    <div class="panel browser">
+      <div class="titlebar"><span class="dots"><i></i><i></i><i></i></span>
+        <span class="addr mono">127.0.0.1:8787/a/b4a465ef…</span></div>
+      <div class="mock" aria-hidden="true">
+        <span class="mline title"></span>
+        <span class="mline" style="width: 78%"></span>
+        <span class="mline" style="width: 64%"></span>
+        <span class="mbars"><i style="height:60%"></i><i style="height:90%"></i><i style="height:40%"></i><i style="height:72%"></i><i style="height:28%"></i></span>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="serif">三个词定义它</h2>
+    <p class="kicker">这三条合在一起,区分了 artifact 和"发个 HTML 文件给你"。</p>
+    <div class="traits">
+      <div class="trait">
+        <p class="t-term">托管 <span class="mono">hosted</span></p>
+        <p>发布后得到一个稳定 URL。接收者打开的是链接,不是附件;作者的画廊里能找到发过的每一个页面。</p>
+      </div>
+      <div class="trait">
+        <p class="t-term">活的 <span class="mono">live</span></p>
+        <p>每次重新发布都成为一个新版本,URL 不变。开着页面的人看到内容原地更新,也可以回看任意历史版本。</p>
+      </div>
+      <div class="trait">
+        <p class="t-term">沙箱 <span class="mono">sandboxed</span></p>
+        <p>内容在严格 CSP 的隔离 iframe 里渲染:不能发出任何外部请求。AI 生成的代码可以放心地跑在浏览器里。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="serif">同一个 URL,不断生长</h2>
+    <p class="kicker">artifact 的关键语义:重新发布同一个文件 = 同一链接的新版本。亲手试一下。</p>
+    <div class="demo">
+      <span class="demo-tag mono">可交互 · 就在本页</span>
+      <div class="vdemo">
+        <div class="browser">
+          <div class="titlebar"><span class="dots"><i></i><i></i><i></i></span>
+            <span class="addr mono">127.0.0.1:8787/a/b4a465ef…</span>
+            <span class="vpill mono" id="vbadge">v1</span></div>
+          <div class="mock" aria-hidden="true">
+            <span class="mline title"></span>
+            <span class="mline" id="m1" style="width: 74%"></span>
+            <span class="mline" id="m2" style="width: 0%; opacity: 0"></span>
+            <span class="mbars" id="mbars"><i style="height:60%"></i><i style="height:90%"></i><i style="height:40%"></i><i style="height:72%"></i><i style="height:28%"></i></span>
+          </div>
+        </div>
+        <div class="vside">
+          <button class="primary" id="republish">再次发布这个文件</button>
+          <p class="note">注意地址栏:<strong>URL 一个字符都没变</strong>,变的只有版本号和内容。</p>
+          <ul class="vlog mono" id="vlog"><li>v1 · 初版:汇总图表</li></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="serif">沙箱不是说说而已</h2>
+    <p class="kicker">这个页面正运行在 <span class="mono">connect-src 'none'</span> 的 CSP 下。两个按钮,一个能成一个必败:</p>
+    <div class="demo">
+      <span class="demo-tag mono">可交互 · 真实的 CSP</span>
+      <div class="csp-actions">
+        <button id="runInline">运行内联脚本</button>
+        <button id="tryFetch">请求外部资源 fetch()</button>
+      </div>
+      <div class="console mono" id="console"><span class="hint">// 结果会出现在这里</span></div>
+    </div>
+    <dl class="rules" style="margin-top: 22px">
+      <div class="rule"><dt>无外部请求</dt><dd>CDN 脚本、外部样式、字体、远程图片、<span class="mono">fetch / XHR / WebSocket</span> 一律被拦截。一切资源必须内联,图片用 data URI。</dd></div>
+      <div class="rule"><dt>无后端</dt><dd>纯静态页面:表单无处提交,查看时不能调 API。交互状态只活在页面里。</dd></div>
+      <div class="rule"><dt>单页</dt><dd>相对链接不会解析,多段内容用页内锚点——就像这个页面这样。</dd></div>
+      <div class="rule"><dt>有上限</dt><dd>渲染后不超过 16 MiB。内嵌位图是超限的头号原因,图表请用 SVG 手绘。</dd></div>
+    </dl>
+  </section>
+
+  <section>
+    <h2 class="serif">什么时候用,什么时候别用</h2>
+    <p class="kicker">判断标准只有一条:这个产出,是"看"比"读"更清楚吗?</p>
+    <div class="fits">
+      <div class="fit"><h3>走读一次改动</h3><p>渲染 diff 并在边栏加注释,评审者在代码旁边读你的理由。</p></div>
+      <div class="fit"><h3>呈现一组数据</h3><p>会话里已经拉到的数据,变成带趋势线和状态色的仪表盘。</p></div>
+      <div class="fit"><h3>并排比较方案</h3><p>几个布局、API 形态或实现路线摆进同一页网格,一眼见高下。</p></div>
+      <div class="fit"><h3>跟踪长任务</h3><p>任务边跑边重发页面,开着链接的人看着清单一项项被勾掉。</p></div>
+      <div class="fit unfit"><h3>✕ 不是内部工具</h3><p>没有后端:不能存表单、不能鉴权、不能多路由。要部署应用,请上自己的基础设施。</p></div>
+      <div class="fit unfit"><h3>✕ 不是一段普通文本</h3><p>一句话能说清的结论,直接在终端里说。为它排版是浪费。</p></div>
+    </div>
+  </section>
+
+  <footer class="colophon">
+    <p>本页由 OpenArtifacts 发布——一个复刻 Claude Code Artifacts 的自托管实现。
+      页面全部资源内联,零外部请求,在 <span class="mono">sandbox</span> iframe 中渲染;
+      你读到的每一条约束,此刻都约束着这个页面自己。</p>
+  </footer>
+</div>
+
+<script>
+  // —— 版本演示:同 URL,内容与版本号原地更新 ——
+  var versions = [
+    { log: "v1 · 初版:汇总图表", m1: "74%", m2: null, bars: [60, 90, 40, 72, 28] },
+    { log: "v2 · 加入按服务分解", m1: "58%", m2: "82%", bars: [30, 85, 55, 95, 44] },
+    { log: "v3 · 补充事件时间线", m1: "66%", m2: "48%", bars: [88, 42, 70, 25, 60] }
+  ];
+  var current = 0;
+  document.getElementById("republish").addEventListener("click", function () {
+    current = (current + 1) % versions.length;
+    var v = versions[current];
+    document.getElementById("vbadge").textContent = "v" + (current + 1);
+    var m1 = document.getElementById("m1");
+    var m2 = document.getElementById("m2");
+    m1.style.width = v.m1;
+    if (v.m2) { m2.style.width = v.m2; m2.style.opacity = 1; }
+    else { m2.style.width = "0%"; m2.style.opacity = 0; }
+    var bars = document.getElementById("mbars").children;
+    for (var i = 0; i < bars.length; i++) bars[i].style.height = v.bars[i] + "%";
+    var log = document.getElementById("vlog");
+    if (current === 0) log.innerHTML = "";
+    var li = document.createElement("li");
+    li.textContent = v.log;
+    log.appendChild(li);
+  });
+
+  // —— CSP 实验:内联脚本可运行,外部请求必被拦截 ——
+  var consoleEl = document.getElementById("console");
+  var inlineRuns = 0;
+  function logLine(cls, text) {
+    if (consoleEl.querySelector(".hint")) consoleEl.innerHTML = "";
+    var div = document.createElement("div");
+    div.className = cls;
+    div.textContent = text;
+    consoleEl.appendChild(div);
+  }
+  document.getElementById("runInline").addEventListener("click", function () {
+    inlineRuns++;
+    logLine("pass", "✓ 内联脚本第 " + inlineRuns + " 次执行成功 —— script-src 'unsafe-inline' 允许");
+  });
+  document.getElementById("tryFetch").addEventListener("click", function () {
+    logLine("hint", "→ fetch(\"https://example.com\") …");
+    fetch("https://example.com")
+      .then(function () {
+        logLine("fail", "?! 请求居然成功了 —— 这不该发生,说明 CSP 没生效");
+      })
+      .catch(function (err) {
+        logLine("fail", "✗ 被浏览器拦截:connect-src 'none' —— " + err.name + ": " + err.message);
+      });
+  });
+</script>

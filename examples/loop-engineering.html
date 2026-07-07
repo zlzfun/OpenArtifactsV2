@@ -1,0 +1,449 @@
+<style>
+  :root {
+    --paper: #f4f7f5;
+    --surface: #ffffff;
+    --ink: #1c2622;
+    --muted: #64716b;
+    --line: #dce4df;
+    --accent: #177a5e;
+    --accent-soft: rgba(23, 122, 94, 0.09);
+    --ctx: #3b6fb0;
+    --act: #b07a1c;
+    --verify: #177a5e;
+    --recover: #b5473a;
+    --ctx-soft: rgba(59, 111, 176, 0.1);
+    --act-soft: rgba(176, 122, 28, 0.1);
+    --verify-soft: rgba(23, 122, 94, 0.1);
+    --recover-soft: rgba(181, 71, 58, 0.1);
+    --console-bg: #161d1a;
+    --console-ink: #c4d2cb;
+    --console-dim: #6e7f77;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #121815;
+      --surface: #1a211d;
+      --ink: #dbe4df;
+      --muted: #8b988f;
+      --line: #2a332e;
+      --accent: #4db892;
+      --accent-soft: rgba(77, 184, 146, 0.1);
+      --ctx: #7aa5dc;
+      --act: #d3a04a;
+      --verify: #4db892;
+      --recover: #d4776a;
+      --console-bg: #0d1210;
+    }
+  }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+      "PingFang SC", "Hiragino Sans GB", sans-serif;
+    line-height: 1.75;
+  }
+  .mono {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  .page { max-width: 880px; margin: 0 auto; padding: 56px 24px 96px; }
+  section { margin-top: 68px; }
+  p { max-width: 62ch; }
+
+  .eyebrow {
+    font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700;
+  }
+  h1 {
+    font-size: clamp(28px, 4.6vw, 40px); line-height: 1.3; font-weight: 800;
+    letter-spacing: -0.015em; margin: 10px 0 14px; text-wrap: balance;
+  }
+  .lede { font-size: 17px; color: var(--muted); margin: 0; }
+  .lede em { font-style: normal; color: var(--ink); font-weight: 600; }
+  h2 {
+    font-size: 23px; font-weight: 800; letter-spacing: -0.01em;
+    margin: 0 0 6px; text-wrap: balance;
+  }
+  .kicker { color: var(--muted); font-size: 14.5px; margin: 0 0 24px; }
+
+  /* —— hero:循环本体 —— */
+  .hero { display: grid; grid-template-columns: 1fr 320px; gap: 36px; align-items: center; }
+  @media (max-width: 720px) { .hero { grid-template-columns: 1fr; } }
+  .loopfig { justify-self: center; position: relative; width: 320px; height: 320px; }
+  .loopfig svg { width: 100%; height: 100%; }
+  .loopfig .ring { fill: none; stroke: var(--line); stroke-width: 2; }
+  .loopfig .arc { fill: none; stroke-width: 2.5; }
+  .loopfig text { font-size: 13px; font-weight: 700; fill: var(--ink); }
+  .loopfig .sub { font-size: 10px; font-weight: 500; fill: var(--muted); }
+  .loopfig .nodebg { fill: var(--surface); stroke-width: 1.5; }
+  .loopfig .runner { fill: var(--accent); }
+  .loopfig .exitlabel { font-size: 10.5px; fill: var(--accent); font-weight: 700; }
+
+  /* —— 演进阶梯 —— */
+  .ladder { display: grid; gap: 10px; counter-reset: rung; }
+  .rung {
+    display: grid; grid-template-columns: 200px 1fr; gap: 18px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; padding: 16px 20px; align-items: baseline;
+  }
+  @media (max-width: 600px) { .rung { grid-template-columns: 1fr; gap: 4px; } }
+  .rung .name { font-weight: 800; font-size: 15px; }
+  .rung .name .en { display: block; font-size: 11.5px; color: var(--muted); font-weight: 600; letter-spacing: 0.04em; }
+  .rung .opt { margin: 0; font-size: 13.5px; color: var(--muted); }
+  .rung .opt strong { color: var(--ink); }
+  .rung.now { border-color: var(--accent); background: var(--accent-soft); }
+  .rung.now .name { color: var(--accent); }
+
+  .thesis {
+    margin: 0; padding: 26px 30px; border-left: 4px solid var(--accent);
+    background: var(--surface); border-radius: 0 10px 10px 0;
+    font-size: 19px; line-height: 1.65; font-weight: 600; max-width: none;
+    text-wrap: balance;
+  }
+  .thesis .mono { color: var(--accent); font-size: 16px; }
+
+  /* —— 四部件 —— */
+  .parts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 640px) { .parts { grid-template-columns: 1fr; } }
+  .part { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+  .part .tag {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 2px 9px; border-radius: 999px; margin-bottom: 8px;
+  }
+  .part.p-ctx .tag { color: var(--ctx); background: var(--ctx-soft); }
+  .part.p-act .tag { color: var(--act); background: var(--act-soft); }
+  .part.p-verify .tag { color: var(--verify); background: var(--verify-soft); }
+  .part.p-recover .tag { color: var(--recover); background: var(--recover-soft); }
+  .part h3 { margin: 0 0 5px; font-size: 15.5px; }
+  .part p { margin: 0; font-size: 13.5px; color: var(--muted); }
+  .part p .mono { font-size: 12px; }
+
+  /* —— 模拟器 —— */
+  .sim { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 24px 26px; }
+  .sim .demo-tag {
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); font-weight: 800;
+  }
+  .sim-controls { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin: 16px 0 6px; }
+  .sim-controls label { font-size: 13.5px; font-weight: 600; }
+  input[type="range"] { width: 220px; accent-color: var(--accent); }
+  .sigval { min-width: 110px; font-size: 13px; color: var(--muted); }
+  button {
+    font: inherit; font-size: 13.5px; font-weight: 700;
+    padding: 8px 18px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--accent); background: var(--accent); color: #fff;
+  }
+  button:hover { opacity: 0.9; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .sim-grid { display: grid; grid-template-columns: 1fr 300px; gap: 20px; margin-top: 14px; }
+  @media (max-width: 720px) { .sim-grid { grid-template-columns: 1fr; } }
+  .chartbox { border: 1px solid var(--line); border-radius: 8px; padding: 14px 14px 8px; }
+  .chartbox svg { width: 100%; height: 220px; display: block; }
+  .chartbox .axis { stroke: var(--line); stroke-width: 1; }
+  .chartbox .gridline { stroke: var(--line); stroke-width: 0.5; stroke-dasharray: 2 4; }
+  .chartbox .ticktext { font-size: 9.5px; fill: var(--muted); }
+  .chartbox .ghost { fill: none; stroke: var(--muted); stroke-width: 1.5; opacity: 0.4; }
+  .chartbox .run { fill: none; stroke: var(--accent); stroke-width: 2.5; }
+  .chartbox .run.bad { stroke: var(--recover); }
+  .chartbox .enddot { fill: var(--accent); }
+  .chartbox .enddot.bad { fill: var(--recover); }
+  .verdict { font-size: 13.5px; font-weight: 700; margin: 8px 2px 0; }
+  .verdict.ok { color: var(--verify); }
+  .verdict.bad { color: var(--recover); }
+  .simlog {
+    background: var(--console-bg); color: var(--console-ink);
+    border-radius: 8px; padding: 12px 14px; font-size: 11.5px; line-height: 1.85;
+    height: 244px; overflow-y: auto; overflow-x: hidden;
+  }
+  .simlog .dim { color: var(--console-dim); }
+  .simlog .good { color: #58b98d; }
+  .simlog .bad { color: #e08578; }
+  .simlog .warn { color: #d3a04a; }
+
+  /* —— 清单 —— */
+  .checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; max-width: 640px; }
+  .checklist li {
+    display: grid; grid-template-columns: 26px 1fr; gap: 12px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; padding: 14px 18px; font-size: 14px;
+  }
+  .checklist .box {
+    width: 18px; height: 18px; margin-top: 3px; border-radius: 5px;
+    border: 2px solid var(--accent); position: relative;
+  }
+  .checklist .box::after {
+    content: "✓"; position: absolute; inset: 0; display: grid; place-items: center;
+    color: var(--accent); font-size: 12px; font-weight: 900;
+  }
+  .checklist strong { display: block; }
+  .checklist span.why { color: var(--muted); font-size: 13px; }
+
+  footer.colophon {
+    margin-top: 76px; padding-top: 20px; border-top: 1px solid var(--line);
+    font-size: 13px; color: var(--muted);
+  }
+  footer.colophon .srcs { margin: 8px 0 0; padding: 0; list-style: none; font-size: 11.5px; }
+  footer.colophon .srcs li { overflow-wrap: anywhere; }
+</style>
+
+<div class="page">
+
+  <header class="hero">
+    <div>
+      <span class="eyebrow mono">OpenArtifacts · 工程随笔 02</span>
+      <h1>Loop Engineering<br>提示是一句话,循环是一个系统</h1>
+      <p class="lede">一次调用生成答案,一个循环逼近目标。Loop engineering 关心的不是"怎么问",
+        而是<em>设计让模型反复 观察 → 行动 → 验证 → 修正 的那台机器</em>:
+        它如何发现失败、收集证据、修订动作,以及凭什么判定"完成"。</p>
+    </div>
+    <div class="loopfig" aria-label="智能体循环:组装上下文、行动、观察验证、修正,验证通过则交付">
+      <svg viewBox="0 0 320 320">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--muted)"/>
+          </marker>
+        </defs>
+        <circle class="ring" cx="160" cy="160" r="104"/>
+        <path d="M 234 87 A 104 104 0 0 1 234 233" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ah)" opacity="0.7"/>
+        <path d="M 86 233 A 104 104 0 0 1 86 87" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ah)" opacity="0.7"/>
+        <!-- 验证通过 → 交付 出口 -->
+        <path d="M 160 264 L 160 296" stroke="var(--accent)" stroke-width="2" marker-end="url(#ah)"/>
+        <text class="exitlabel mono" x="170" y="292">全绿 → 交付</text>
+        <!-- 节点 -->
+        <g>
+          <rect class="nodebg" x="106" y="40" width="108" height="34" rx="17" stroke="var(--ctx)"/>
+          <text x="160" y="62" text-anchor="middle" fill="var(--ctx)">组装上下文</text>
+          <rect class="nodebg" x="228" y="143" width="76" height="34" rx="17" stroke="var(--act)"/>
+          <text x="266" y="165" text-anchor="middle" fill="var(--act)">行动</text>
+          <rect class="nodebg" x="102" y="246" width="116" height="34" rx="17" stroke="var(--verify)"/>
+          <text x="160" y="268" text-anchor="middle" fill="var(--verify)">观察 · 验证</text>
+          <rect class="nodebg" x="16" y="143" width="76" height="34" rx="17" stroke="var(--recover)"/>
+          <text x="54" y="165" text-anchor="middle" fill="var(--recover)">修正</text>
+        </g>
+        <circle class="runner" id="runner" r="5">
+          <animateMotion dur="6s" repeatCount="indefinite"
+            path="M 160 56 A 104 104 0 1 1 159.9 56"/>
+        </circle>
+      </svg>
+    </div>
+  </header>
+
+  <section>
+    <h2>杠杆搬了三次家</h2>
+    <p class="kicker">每一层都包含上一层——循环工程不是取代提示工程,而是把它变成整个系统里最小的零件。</p>
+    <div class="ladder">
+      <div class="rung">
+        <span class="name">提示工程<span class="en mono">prompt engineering</span></span>
+        <p class="opt">优化<strong>任务如何被表述</strong>。杠杆:一段话的措辞。</p>
+      </div>
+      <div class="rung">
+        <span class="name">上下文工程<span class="en mono">context engineering</span></span>
+        <p class="opt">优化<strong>模型看见什么</strong>:指令、数据、工具、中间结果的取舍与排布。</p>
+      </div>
+      <div class="rung">
+        <span class="name">装具工程<span class="en mono">harness engineering</span></span>
+        <p class="opt">优化<strong>模型能触到什么</strong>:文件、可执行环境、记忆、反馈通道。</p>
+      </div>
+      <div class="rung now">
+        <span class="name">循环工程<span class="en mono">loop engineering</span></span>
+        <p class="opt">优化<strong>系统如何迭代到完成</strong>:怎样察觉失败、收集证据、修订行动、判定终止。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <blockquote class="thesis">
+      在每次行动之后都验证的循环,能把一个不稳定的生成器,
+      变成一个<span class="mono">收敛</span>的系统。
+    </blockquote>
+  </section>
+
+  <section>
+    <h2>一个循环的四个部件</h2>
+    <p class="kicker">颜色与上面环形图里的节点一一对应。设计循环,就是分别回答这四个问题。</p>
+    <div class="parts">
+      <div class="part p-ctx">
+        <span class="tag mono">context</span>
+        <h3>组装上下文</h3>
+        <p>每轮迭代看见什么?上一轮的观察必须回流,但不能什么都塞——轨迹会越滚越长,取舍本身就是设计。</p>
+      </div>
+      <div class="part p-act">
+        <span class="tag mono">action</span>
+        <h3>行动空间</h3>
+        <p>它能做什么?工具越强,循环越短;但每个工具也是失败面。行动要留下可观察的痕迹,而不是悄悄改变世界。</p>
+      </div>
+      <div class="part p-verify">
+        <span class="tag mono">verify</span>
+        <h3>验证信号</h3>
+        <p>整个循环最值钱的部件。测试、编译器、类型检查、截图比对——信号必须来自环境的地面真值,而不是模型自评"我觉得好了"。</p>
+      </div>
+      <div class="part p-recover">
+        <span class="tag mono">recover / halt</span>
+        <h3>修正与终止</h3>
+        <p>失败后怎么办:重试、回滚、换路径?何时停:全绿即停,预算(轮数 / 时间 / token)耗尽也要停——否则循环会替你烧钱。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>亲手试:验证信号决定收敛</h2>
+    <p class="kicker">同一个"模型"(同样的出错概率),只改循环里验证信号的强度。任务:把 8 个失败测试修到 0,预算 14 轮。</p>
+    <div class="sim">
+      <span class="demo-tag mono">可交互 · 就在本页</span>
+      <div class="sim-controls">
+        <label for="sig">验证信号强度</label>
+        <input type="range" id="sig" min="0" max="100" value="0">
+        <span class="sigval mono" id="sigval">0% · 从不验证</span>
+        <button id="run">运行循环</button>
+      </div>
+      <div class="sim-grid">
+        <div class="chartbox">
+          <svg id="chart" viewBox="0 0 460 220" preserveAspectRatio="none" aria-label="剩余失败测试数随迭代轮次的变化"></svg>
+          <p class="verdict mono" id="verdict">拖动滑块,点「运行循环」</p>
+        </div>
+        <div class="simlog mono" id="simlog"><span class="dim">// 循环日志会出现在这里</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>把循环造好的六条清单</h2>
+    <p class="kicker">来自各家实践文章的最大公约数,按重要程度排列。</p>
+    <ul class="checklist">
+      <li><span class="box"></span><div><strong>给它一条能自己跑的验证命令</strong><span class="why">一条命令、确定性输出、非零退出码代表失败。没有这条,其余都是装饰。</span></div></li>
+      <li><span class="box"></span><div><strong>让失败响亮</strong><span class="why">断言、报错、diff——机器可读的信号;"看起来不太对"这种散文,循环消化不了。</span></div></li>
+      <li><span class="box"></span><div><strong>沙箱化,让它敢于尝试</strong><span class="why">失败越安全,循环可以越激进。隔离的环境是自主性的前提,不是它的对立面。</span></div></li>
+      <li><span class="box"></span><div><strong>给循环设预算</strong><span class="why">轮数、时间、token 三选一也行。无预算的循环不是自主,是失控。</span></div></li>
+      <li><span class="box"></span><div><strong>记录整条轨迹</strong><span class="why">每轮的行动、观察、判断都留档——循环出错时,你调试的是轨迹,不是模型。</span></div></li>
+      <li><span class="box"></span><div><strong>终止条件写成谓词</strong><span class="why">"全部测试通过且 lint 干净"可以判定;"用户会满意"不可以。</span></div></li>
+    </ul>
+  </section>
+
+  <footer class="colophon">
+    <p>本页是一个 OpenArtifacts artifact:全部资源内联,在沙箱 iframe 中渲染。
+      沙箱未授予页内导航,故参考来源以纯文本列出:</p>
+    <ul class="srcs mono">
+      <li>tosea.ai/blog/loop-engineering-ai-agents-complete-guide-2026</li>
+      <li>lushbinary.com/blog/loop-engineering-ai-coding-agents-guide</li>
+      <li>mindstudio.ai/blog/what-is-loop-engineering-ai-coding-agents</li>
+      <li>medium.com/@adnanmasood/loop-engineering-a-guide-for-engineers-and-practitioners</li>
+    </ul>
+  </footer>
+</div>
+
+<script>
+  // 尊重减弱动态偏好:移除环形图上的巡回光点
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    var r = document.getElementById("runner");
+    if (r) r.remove();
+  }
+
+  // —— 收敛模拟器 ——
+  var sig = document.getElementById("sig");
+  var sigval = document.getElementById("sigval");
+  var chart = document.getElementById("chart");
+  var logEl = document.getElementById("simlog");
+  var verdict = document.getElementById("verdict");
+  var lastPath = null;
+
+  function sigLabel(v) {
+    if (v === 0) return v + "% · 从不验证";
+    if (v < 40) return v + "% · 偶尔抽查";
+    if (v < 80) return v + "% · 多数行动后验证";
+    return v + "% · 每步验证";
+  }
+  sig.addEventListener("input", function () { sigval.textContent = sigLabel(+sig.value); });
+
+  var W = 460, H = 220, PL = 34, PR = 12, PT = 14, PB = 26;
+  var MAXI = 14, MAXF = 10;
+  function x(i) { return PL + (W - PL - PR) * i / MAXI; }
+  function y(f) { return PT + (H - PT - PB) * (1 - f / MAXF); }
+
+  function drawFrame() {
+    var s = "";
+    s += '<line class="axis" x1="' + PL + '" y1="' + y(0) + '" x2="' + (W - PR) + '" y2="' + y(0) + '"/>';
+    s += '<line class="axis" x1="' + PL + '" y1="' + PT + '" x2="' + PL + '" y2="' + y(0) + '"/>';
+    for (var f = 2; f <= MAXF; f += 2) {
+      s += '<line class="gridline" x1="' + PL + '" y1="' + y(f) + '" x2="' + (W - PR) + '" y2="' + y(f) + '"/>';
+      s += '<text class="ticktext" x="' + (PL - 6) + '" y="' + (y(f) + 3) + '" text-anchor="end">' + f + "</text>";
+    }
+    for (var i = 0; i <= MAXI; i += 2) {
+      s += '<text class="ticktext" x="' + x(i) + '" y="' + (H - 8) + '" text-anchor="middle">' + i + "</text>";
+    }
+    s += '<text class="ticktext" x="' + (W - PR) + '" y="' + (H - 8) + '" text-anchor="end">迭代轮次 →</text>';
+    s += '<text class="ticktext" x="' + (PL - 6) + '" y="' + (PT - 2) + '" text-anchor="end">剩余失败</text>';
+    return s;
+  }
+
+  function pts(hist) {
+    var out = [];
+    for (var i = 0; i < hist.length; i++) out.push(x(i) + "," + y(hist[i]));
+    return out.join(" ");
+  }
+
+  function addLog(cls, text) {
+    if (logEl.querySelector(".dim")) logEl.innerHTML = "";
+    var d = document.createElement("div");
+    if (cls) d.className = cls;
+    d.textContent = text;
+    logEl.appendChild(d);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  document.getElementById("run").addEventListener("click", function () {
+    var s = +sig.value / 100;
+    var failing = 8;
+    var hist = [failing];
+    logEl.innerHTML = "";
+    addLog("dim", "// 信号强度 " + sig.value + "% · 初始失败 8 · 预算 14 轮");
+    var converged = -1;
+
+    for (var i = 1; i <= MAXI; i++) {
+      // 同一个"模型":有验证信号时,注意力对准真实失败,修复概率更高
+      var pFix = 0.42 + 0.3 * s;
+      var roll = Math.random();
+      var delta, note, cls;
+      if (roll < pFix) { delta = -1; note = "修复 1 项"; cls = "good"; }
+      else if (roll < pFix + 0.18) { delta = -2; note = "修复 2 项"; cls = "good"; }
+      else if (roll < pFix + 0.38) { delta = 0; note = "改动无效"; cls = "dim"; }
+      else { delta = +1; note = "引入回归 +1"; cls = "bad"; }
+
+      if (delta > 0 && Math.random() < s) {
+        addLog("warn", "迭代 " + i + ": " + note + " → 验证拦截,丢弃改动 (剩 " + failing + ")");
+        hist.push(failing);
+        continue;
+      }
+      failing = Math.max(0, Math.min(MAXF, failing + delta));
+      addLog(cls, "迭代 " + i + ": " + note + " (剩 " + failing + ")");
+      hist.push(failing);
+
+      if (failing === 0 && s >= 0.05) { converged = i; break; }
+      // 弱信号循环:第 9 轮"自我感觉良好",提前宣称完成
+      if (s < 0.3 && i >= 9) {
+        addLog("bad", "迭代 " + i + ": 无验证信号,模型自评「已完成」→ 循环退出");
+        break;
+      }
+    }
+
+    var ok = failing === 0;
+    if (ok) addLog("good", "✓ 验证全绿,第 " + converged + " 轮交付");
+    else addLog("bad", "✗ 交付物仍有 " + failing + " 个失败测试,使用者将替你发现它们");
+
+    var svg = drawFrame();
+    if (lastPath) svg += '<polyline class="ghost" points="' + lastPath + '"/>';
+    var cur = pts(hist);
+    svg += '<polyline class="run' + (ok ? "" : " bad") + '" points="' + cur + '"/>';
+    var ex = x(hist.length - 1), ey = y(hist[hist.length - 1]);
+    svg += '<circle class="enddot' + (ok ? "" : " bad") + '" cx="' + ex + '" cy="' + ey + '" r="4"/>';
+    chart.innerHTML = svg;
+    lastPath = cur;
+
+    verdict.className = "verdict mono " + (ok ? "ok" : "bad");
+    verdict.textContent = ok
+      ? "✓ 收敛:第 " + converged + " 轮达到 0 失败(灰线为上一次运行)"
+      : "✗ 未收敛:结束时仍剩 " + failing + " 个失败(灰线为上一次运行)";
+  });
+
+  chart.innerHTML = drawFrame();
+</script>

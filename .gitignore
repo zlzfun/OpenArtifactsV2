@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+server/data/
+
+# 内部演示素材,不入库
+examples/openartifacts-showcase.html
+examples/showcase-template.html

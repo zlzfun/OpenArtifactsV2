@@ -1,0 +1,207 @@
+<style>
+  :root {
+    --bg: #f3f5f7;
+    --surface: #ffffff;
+    --ink: #1d2833;
+    --muted: #5d6b7a;
+    --line: #dde3e9;
+    --accent: #3a6ea5;
+    --good: #2e8f63;
+    --warn: #c07d10;
+    --crit: #bf4635;
+    --crit-soft: rgba(191, 70, 53, 0.1);
+    --warn-soft: rgba(192, 125, 16, 0.1);
+    --good-soft: rgba(46, 143, 99, 0.1);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151a20;
+      --surface: #1d242c;
+      --ink: #dce3ea;
+      --muted: #8494a4;
+      --line: #2c3540;
+      --accent: #6d9fd4;
+      --good: #4cb787;
+      --warn: #d9a13c;
+      --crit: #d96a58;
+    }
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+      "PingFang SC", "Hiragino Sans GB", sans-serif;
+    line-height: 1.55;
+  }
+  .mono {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  .page { max-width: 980px; margin: 0 auto; padding: 40px 24px 80px; display: grid; gap: 28px; }
+
+  .masthead { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding-bottom: 18px; }
+  .masthead h1 { margin: 0; font-size: 21px; font-weight: 650; letter-spacing: -0.01em; text-wrap: balance; }
+  .masthead .period { color: var(--muted); font-size: 13px; }
+  .masthead .thesis { flex-basis: 100%; margin: 4px 0 0; color: var(--muted); font-size: 14px; max-width: 62ch; }
+  .masthead .thesis strong { color: var(--crit); font-weight: 600; }
+
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+  .kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px 14px; display: grid; gap: 2px; }
+  .kpi .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+  .kpi .value { font-size: 26px; font-weight: 650; }
+  .kpi .delta { font-size: 12.5px; }
+  .kpi .delta.up { color: var(--crit); }
+  .kpi .delta.down { color: var(--good); }
+  .kpi svg { margin-top: 8px; width: 100%; height: 30px; }
+  .kpi polyline { fill: none; stroke: var(--accent); stroke-width: 2; }
+  .kpi .spark-end { fill: var(--accent); }
+
+  section h2 { font-size: 14px; font-weight: 650; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin: 0 0 12px; }
+
+  .tablewrap { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 600; padding: 12px 16px 8px; border-bottom: 1px solid var(--line); }
+  td { padding: 11px 16px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  td.num { text-align: right; }
+  th.num { text-align: right; }
+
+  .service { display: flex; align-items: center; gap: 10px; }
+  .stripe { width: 3px; height: 22px; border-radius: 2px; flex-shrink: 0; }
+  .stripe.crit { background: var(--crit); }
+  .stripe.warn { background: var(--warn); }
+  .stripe.good { background: var(--good); }
+
+  .pill { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 2px 9px; border-radius: 999px; }
+  .pill.crit { color: var(--crit); background: var(--crit-soft); }
+  .pill.warn { color: var(--warn); background: var(--warn-soft); }
+  .pill.good { color: var(--good); background: var(--good-soft); }
+
+  .bar { display: flex; align-items: center; gap: 10px; min-width: 180px; }
+  .bar .track { flex: 1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+  .bar .fill { height: 100%; border-radius: 3px; background: var(--accent); display: block; }
+  .bar.crit .fill { background: var(--crit); }
+  .bar .pct { font-size: 12.5px; color: var(--muted); min-width: 44px; text-align: right; }
+
+  .timeline { display: grid; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 6px 0; }
+  .event { display: grid; grid-template-columns: 110px 14px 1fr; gap: 0 14px; padding: 12px 18px; position: relative; }
+  .event + .event::before { content: ""; position: absolute; left: 149px; top: -14px; height: 20px; width: 1px; background: var(--line); }
+  .event time { font-size: 12.5px; color: var(--muted); padding-top: 2px; }
+  .event .dot { width: 9px; height: 9px; border-radius: 50%; margin-top: 6px; }
+  .event .dot.crit { background: var(--crit); }
+  .event .dot.warn { background: var(--warn); }
+  .event .dot.good { background: var(--good); }
+  .event .what { font-size: 14px; }
+  .event .what .ref { color: var(--muted); font-size: 12.5px; }
+
+  footer { color: var(--muted); font-size: 12.5px; border-top: 1px solid var(--line); padding-top: 14px; }
+</style>
+
+<div class="page">
+  <header class="masthead">
+    <h1>部署失败率周报</h1>
+    <span class="period mono">2026-06-29 → 2026-07-05 · staging + production</span>
+    <p class="thesis">本周 214 次部署中 19 次失败。恶化集中在 <strong>ingest</strong> 一个服务:schema 迁移锁超时贡献了全部新增失败,其余服务均在改善。</p>
+  </header>
+
+  <div class="kpis">
+    <div class="kpi">
+      <span class="label">失败率</span>
+      <span class="value mono">8.9<span style="font-size:15px">%</span></span>
+      <span class="delta up">▲ 2.1 pp,较上周</span>
+      <svg viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
+        <polyline points="0,20 16,22 33,18 50,21 66,14 83,10 100,6"/>
+        <circle class="spark-end" cx="100" cy="6" r="2.6"/>
+      </svg>
+    </div>
+    <div class="kpi">
+      <span class="label">失败次数 / 总部署</span>
+      <span class="value mono">19 / 214</span>
+      <span class="delta up">▲ 上周 14 / 205</span>
+      <svg viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
+        <polyline points="0,18 16,20 33,16 50,19 66,13 83,11 100,7"/>
+        <circle class="spark-end" cx="100" cy="7" r="2.6"/>
+      </svg>
+    </div>
+    <div class="kpi">
+      <span class="label">恢复中位时长</span>
+      <span class="value mono">11<span style="font-size:15px">min</span></span>
+      <span class="delta down">▼ 4 min,回滚已自动化</span>
+      <svg viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
+        <polyline points="0,8 16,10 33,9 50,14 66,16 83,20 100,23"/>
+        <circle class="spark-end" cx="100" cy="23" r="2.6"/>
+      </svg>
+    </div>
+  </div>
+
+  <section>
+    <h2>按服务分解</h2>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>服务</th><th>趋势</th><th class="num">失败 / 部署</th><th>失败率</th><th>主要原因</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="service"><span class="stripe crit"></span><span class="mono">ingest</span></span></td>
+            <td><span class="pill crit">恶化</span></td>
+            <td class="num mono">11 / 38</td>
+            <td><span class="bar crit"><span class="track"><span class="fill" style="width:29%"></span></span><span class="pct mono">28.9%</span></span></td>
+            <td>migration 锁超时(pg_advisory_lock)</td>
+          </tr>
+          <tr>
+            <td><span class="service"><span class="stripe warn"></span><span class="mono">api</span></span></td>
+            <td><span class="pill warn">持平</span></td>
+            <td class="num mono">5 / 84</td>
+            <td><span class="bar"><span class="track"><span class="fill" style="width:6%"></span></span><span class="pct mono">6.0%</span></span></td>
+            <td>金丝雀阶段健康检查抖动</td>
+          </tr>
+          <tr>
+            <td><span class="service"><span class="stripe good"></span><span class="mono">web</span></span></td>
+            <td><span class="pill good">改善</span></td>
+            <td class="num mono">2 / 61</td>
+            <td><span class="bar"><span class="track"><span class="fill" style="width:3%"></span></span><span class="pct mono">3.3%</span></span></td>
+            <td>构建缓存失效(已修)</td>
+          </tr>
+          <tr>
+            <td><span class="service"><span class="stripe good"></span><span class="mono">worker</span></span></td>
+            <td><span class="pill good">改善</span></td>
+            <td class="num mono">1 / 31</td>
+            <td><span class="bar"><span class="track"><span class="fill" style="width:3%"></span></span><span class="pct mono">3.2%</span></span></td>
+            <td>单次镜像拉取超时</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>关键事件</h2>
+    <div class="timeline">
+      <div class="event">
+        <time class="mono">07-01 14:22</time>
+        <span class="dot crit"></span>
+        <span class="what">ingest 首次因迁移锁超时失败,自动回滚成功 <span class="ref mono">deploy #4821</span></span>
+      </div>
+      <div class="event">
+        <time class="mono">07-02 09:40</time>
+        <span class="dot crit"></span>
+        <span class="what">同一迁移重试 4 次全部失败,锁被夜间批处理任务持有 <span class="ref mono">deploy #4826–4829</span></span>
+      </div>
+      <div class="event">
+        <time class="mono">07-03 11:15</time>
+        <span class="dot warn"></span>
+        <span class="what">临时措施:迁移窗口避开批处理时段,失败停止新增</span>
+      </div>
+      <div class="event">
+        <time class="mono">07-04 16:03</time>
+        <span class="dot good"></span>
+        <span class="what">根因修复合入:迁移改为 lock_timeout + 重试退避 <span class="ref mono">PR #1187</span></span>
+      </div>
+    </div>
+  </section>
+
+  <footer>数据来源:CI 部署流水线 2026-06-29 至 2026-07-05,共 214 次部署。失败率 = 失败次数 / 触发次数,不含手动取消。</footer>
+</div>

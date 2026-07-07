@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>__FAVICON__</text></svg>">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f3f5f7; --surface: #ffffff; --border: #dde3e9;
+    --text: #1d2833; --muted: #5d6b7a; --accent: #3a6ea5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #151a20; --surface: #1d242c; --border: #2c3540;
+            --text: #dce3ea; --muted: #8494a4; --accent: #6d9fd4; }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; height: 100vh; display: flex; flex-direction: column;
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  }
+  header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px; background: var(--surface);
+    border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  header .favicon { font-size: 20px; }
+  header .title { font-weight: 600; font-size: 15px; }
+  header .spacer { flex: 1; }
+  header a.gallery { color: var(--muted); font-size: 13px; text-decoration: none; }
+  header a.gallery:hover { color: var(--accent); }
+  select, button {
+    font: inherit; font-size: 13px; padding: 5px 10px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface); color: var(--text); cursor: pointer;
+  }
+  button:hover, select:hover { border-color: var(--accent); }
+  .badge {
+    font-size: 12px; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px;
+  }
+  .badge.live { color: var(--accent); border-color: var(--accent); }
+  iframe { flex: 1; border: none; width: 100%; background: #fff; }
+  @media (prefers-color-scheme: dark) { iframe { background: #0d1117; } }
+</style>
+</head>
+<body>
+<header>
+  <span class="favicon" id="favicon"></span>
+  <span class="title" id="title"></span>
+  <span class="badge live" id="liveBadge" title="跟随最新版本,发布后自动刷新">● 最新</span>
+  <span class="spacer"></span>
+  <select id="versionPicker" title="选择查看的版本"></select>
+  <button id="copyLink">复制链接</button>
+  <a class="gallery" href="/">全部 artifacts →</a>
+</header>
+<iframe id="frame" sandbox="allow-scripts allow-modals allow-downloads" referrerpolicy="no-referrer"></iframe>
+<script>
+  let meta = __META_JSON__;
+  const artifactId = meta.id;
+  let followLatest = true;   // 默认跟随最新版本,发布新版本时原地更新
+
+  const $ = (id) => document.getElementById(id);
+
+  function latestVersion() {
+    return meta.versions[meta.versions.length - 1].version;
+  }
+
+  function renderHeader() {
+    $("favicon").textContent = meta.favicon;
+    $("title").textContent = meta.title;
+    document.title = meta.title;
+    const picker = $("versionPicker");
+    const current = followLatest ? latestVersion() : Number(picker.value);
+    picker.innerHTML = "";
+    for (const v of meta.versions) {
+      const opt = document.createElement("option");
+      opt.value = v.version;
+      opt.textContent = "v" + v.version + (v.label ? " · " + v.label : "");
+      picker.appendChild(opt);
+    }
+    picker.value = current;
+    $("liveBadge").style.display = followLatest ? "" : "none";
+  }
+
+  function loadVersion(v) {
+    $("frame").src = "/a/" + artifactId + "/raw?v=" + v;
+  }
+
+  $("versionPicker").addEventListener("change", (e) => {
+    followLatest = Number(e.target.value) === latestVersion();
+    $("liveBadge").style.display = followLatest ? "" : "none";
+    loadVersion(e.target.value);
+  });
+
+  $("copyLink").addEventListener("click", async () => {
+    await navigator.clipboard.writeText(location.origin + "/a/" + artifactId);
+    $("copyLink").textContent = "已复制 ✓";
+    setTimeout(() => ($("copyLink").textContent = "复制链接"), 1500);
+  });
+
+  // 轮询检测新版本:跟随最新时,新发布会原地刷新页面内容
+  setInterval(async () => {
+    try {
+      const res = await fetch("/api/artifacts/" + artifactId);
+      if (!res.ok) return;
+      const fresh = await res.json();
+      if (fresh.versions.length !== meta.versions.length ||
+          fresh.title !== meta.title) {
+        const hadNew = fresh.versions.length !== meta.versions.length;
+        meta = fresh;
+        renderHeader();
+        if (followLatest && hadNew) loadVersion(latestVersion());
+      }
+    } catch (_) { /* 服务暂时不可达,下一轮再试 */ }
+  }, 3000);
+
+  renderHeader();
+  loadVersion(latestVersion());
+</script>
+</body>
+</html>
