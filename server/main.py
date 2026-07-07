@@ -88,7 +88,7 @@ def viewer(artifact_id: str):
 
     page = (
         (TEMPLATES / "viewer.html")
-        .read_text()
+        .read_text(encoding="utf-8")
         .replace("__TITLE__", html.escape(art["title"]))
         .replace("__FAVICON__", art["favicon"])
         .replace("__META_JSON__", json.dumps(art))
@@ -129,5 +129,5 @@ def gallery():
         )
     else:
         cards = '<div class="empty">还没有 artifact,用 skill 发布第一个吧。</div>'
-    page = (TEMPLATES / "gallery.html").read_text().replace("__ITEMS__", cards)
+    page = (TEMPLATES / "gallery.html").read_text(encoding="utf-8").replace("__ITEMS__", cards)
     return HTMLResponse(page)
