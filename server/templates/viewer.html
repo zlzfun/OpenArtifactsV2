@@ -96,8 +96,24 @@
     loadVersion(e.target.value);
   });
 
+  // navigator.clipboard 仅在安全上下文(HTTPS/localhost)可用;
+  // 局域网 http 访问时退回 execCommand 方案
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); } finally { ta.remove(); }
+    return Promise.resolve();
+  }
+
   $("copyLink").addEventListener("click", async () => {
-    await navigator.clipboard.writeText(location.origin + "/a/" + artifactId);
+    await copyText(location.origin + "/a/" + artifactId);
     $("copyLink").textContent = "已复制 ✓";
     setTimeout(() => ($("copyLink").textContent = "复制链接"), 1500);
   });
