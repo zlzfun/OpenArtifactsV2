@@ -13,12 +13,19 @@ description: 把 HTML/Markdown 页面发布为可在浏览器查看的 artifact(
 2. 运行发布脚本:
 
 ```bash
-python3 {SKILL_DIR}/scripts/publish.py <文件路径> --title "简洁的标题" --favicon "📊" [--label "本次改动几个字"]
+python3 {SKILL_DIR}/scripts/publish.py <文件路径> --title "简洁的标题" --favicon "📊" [--label "本次改动几个字"] [--url <迭代的已发布链接>]
 ```
 
 3. 把脚本输出的 URL 展示给用户。
 
-**更新语义(重要)**:同一文件路径重复发布 = 同一 URL 的新版本;不同文件路径 = 全新 artifact。要更新已发布的页面,编辑原文件后用同一路径再发一次。favicon 在同一 artifact 的多次发布间保持不变,用户靠它找到浏览器标签页。
+**发布前必须先判断:迭代还是全新?(重要)**
+
+- **迭代**(同一会话中的默认):改内容、改形式(html ↔ slides ↔ md)、修问题、用户说"再做一版 / 改成… / 更新一下"都算。→ 发布命令加 `--url <该页面上次输出的链接>`,URL 不变、版本 +1;此时文件名和类型可以随意变(比如从 `foo.html` 换成 `foo.slides.html`)。
+- **全新交付物**:用户要一个新主题的页面,或明确要求"另开一个页面"。→ 不带 `--url`,用新文件路径,得到新 URL。
+
+拿不准时选迭代——同一个链接持续演进几乎总是用户想要的;发错了也可修复:用 `--url <原页面链接>` 重发一次即可,多出来的新 URL 可通过 DELETE `/api/artifacts/{id}` 清理。
+
+兜底规则:不带 `--url` 时按文件路径匹配,同一路径重复发布也会续同一 URL。favicon 在同一 artifact 的多次发布间保持不变,用户靠它找到浏览器标签页。
 
 服务地址默认 `http://127.0.0.1:8787`,可用环境变量 `OPEN_ARTIFACTS_SERVER` 覆盖。
 

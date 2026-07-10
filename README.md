@@ -43,7 +43,7 @@ python3 skill/open-artifacts/scripts/publish.py page.html --title "我的页面"
 
 ## 核心语义(与官方一致)
 
-- 同一文件路径重复发布 → 同一 URL 的新版本;新路径 → 新 artifact
+- 迭代已发布页面:发布时带 `--url <该页面链接>` → 同一 URL 的新版本,文件名/类型可变;不带时按文件路径兜底(同一路径续同一 URL,新路径 = 新 artifact)。设计动机见 [docs/identity-and-versions.md](docs/identity-and-versions.md)
 - 查看器每 3 秒轮询,跟随「最新」时新版本原地刷新;也可用版本选择器回看历史版本
 - 内容在 `sandbox` iframe 中渲染,CSP 禁止一切外部请求(脚本/样式/字体/图片/fetch/XHR/WebSocket)
 - 上传 `.md` 自动渲染为带样式的 HTML;上传 HTML 只需写 body 内容,服务端包 document shell

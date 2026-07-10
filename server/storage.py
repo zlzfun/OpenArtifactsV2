@@ -1,8 +1,12 @@
 """SQLite 存储层:artifact 元数据 + 版本内容。
 
 单用户场景,内容直接存 SQLite(单版本上限 16 MiB,与官方一致)。
-`source_path` 是发布端文件的绝对路径,用来实现官方的关键语义:
-同一文件路径重复发布 → 同一 artifact 的新版本;新路径 → 新 artifact。
+
+artifact 身份的两条线(详见 docs/identity-and-versions.md):
+- 显式句柄:发布时指定 artifact_id(来自 --url)→ 直接追加版本,
+  并把 source_path 重绑定到本次路径,后续裸路径发布也能续上;
+- 路径兜底:同一 source_path 重复发布 → 同一 artifact 的新版本。
+source_path 可空:重绑定时新路径若被其他 artifact 占用,占用者被解绑。
 """
 
 import sqlite3
@@ -28,7 +32,7 @@ def init_db() -> None:
             """
             CREATE TABLE IF NOT EXISTS artifacts (
                 id          TEXT PRIMARY KEY,
-                source_path TEXT UNIQUE NOT NULL,
+                source_path TEXT UNIQUE,
                 title       TEXT NOT NULL,
                 favicon     TEXT NOT NULL DEFAULT '📄',
                 created_at  TEXT NOT NULL
@@ -44,6 +48,31 @@ def init_db() -> None:
             );
             """
         )
+        _migrate_source_path_nullable(conn)
+
+
+def _migrate_source_path_nullable(conn: sqlite3.Connection) -> None:
+    """老库的 source_path 带 NOT NULL;重绑定解绑占用者时需要它可空。"""
+    col = next(
+        c for c in conn.execute("PRAGMA table_info(artifacts)") if c["name"] == "source_path"
+    )
+    if not col["notnull"]:
+        return
+    # SQLite 改列约束只能重建表;本连接未开 FK 检查,DROP 期间 versions 的引用不受影响
+    conn.executescript(
+        """
+        CREATE TABLE artifacts_new (
+            id          TEXT PRIMARY KEY,
+            source_path TEXT UNIQUE,
+            title       TEXT NOT NULL,
+            favicon     TEXT NOT NULL DEFAULT '📄',
+            created_at  TEXT NOT NULL
+        );
+        INSERT INTO artifacts_new SELECT id, source_path, title, favicon, created_at FROM artifacts;
+        DROP TABLE artifacts;
+        ALTER TABLE artifacts_new RENAME TO artifacts;
+        """
+    )
 
 
 def _now() -> str:
@@ -57,27 +86,51 @@ def publish(
     content: str,
     content_type: str,
     label: str | None = None,
+    artifact_id: str | None = None,
 ) -> dict:
-    """发布一个版本。source_path 已存在则追加版本,否则新建 artifact。"""
+    """发布一个版本。
+
+    artifact_id 指定时(--url 更新)直接追加版本,并把 source_path 重绑定到
+    本次路径;否则按 source_path 匹配:已存在则追加版本,不存在则新建。
+    artifact_id 不存在时抛 KeyError。
+    """
     with _connect() as conn:
         conn.execute("PRAGMA foreign_keys = ON")
-        row = conn.execute(
-            "SELECT id FROM artifacts WHERE source_path = ?", (source_path,)
-        ).fetchone()
-        if row:
-            artifact_id = row["id"]
-            # 标题和图标随最新一次发布更新
+        created = False
+        if artifact_id:
+            if not conn.execute(
+                "SELECT 1 FROM artifacts WHERE id = ?", (artifact_id,)
+            ).fetchone():
+                raise KeyError(artifact_id)
+            # 身份重绑定到本次路径:先解绑占用该路径的其他 artifact,
+            # 之后对这个文件的裸路径发布会继续更新本 artifact
             conn.execute(
-                "UPDATE artifacts SET title = ?, favicon = ? WHERE id = ?",
-                (title, favicon, artifact_id),
+                "UPDATE artifacts SET source_path = NULL WHERE source_path = ? AND id != ?",
+                (source_path, artifact_id),
+            )
+            conn.execute(
+                "UPDATE artifacts SET source_path = ?, title = ?, favicon = ? WHERE id = ?",
+                (source_path, title, favicon, artifact_id),
             )
         else:
-            artifact_id = uuid.uuid4().hex[:12]
-            conn.execute(
-                "INSERT INTO artifacts (id, source_path, title, favicon, created_at)"
-                " VALUES (?, ?, ?, ?, ?)",
-                (artifact_id, source_path, title, favicon, _now()),
-            )
+            row = conn.execute(
+                "SELECT id FROM artifacts WHERE source_path = ?", (source_path,)
+            ).fetchone()
+            if row:
+                artifact_id = row["id"]
+                # 标题和图标随最新一次发布更新
+                conn.execute(
+                    "UPDATE artifacts SET title = ?, favicon = ? WHERE id = ?",
+                    (title, favicon, artifact_id),
+                )
+            else:
+                created = True
+                artifact_id = uuid.uuid4().hex[:12]
+                conn.execute(
+                    "INSERT INTO artifacts (id, source_path, title, favicon, created_at)"
+                    " VALUES (?, ?, ?, ?, ?)",
+                    (artifact_id, source_path, title, favicon, _now()),
+                )
 
         next_version = conn.execute(
             "SELECT COALESCE(MAX(version), 0) + 1 AS v FROM versions WHERE artifact_id = ?",
@@ -88,7 +141,7 @@ def publish(
             " VALUES (?, ?, ?, ?, ?, ?)",
             (artifact_id, next_version, content, content_type, label, _now()),
         )
-        return {"artifact_id": artifact_id, "version": next_version}
+        return {"artifact_id": artifact_id, "version": next_version, "created": created}
 
 
 def list_artifacts() -> list[dict]:

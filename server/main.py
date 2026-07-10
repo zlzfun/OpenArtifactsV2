@@ -41,6 +41,9 @@ class PublishRequest(BaseModel):
     content: str
     content_type: str = Field(pattern="^(html|markdown|slides)$")
     label: str | None = Field(default=None, max_length=60)
+    artifact_id: str | None = Field(
+        default=None, description="更新已有 artifact:其 id;省略时按 source_path 匹配"
+    )
 
 
 @app.post("/api/publish")
@@ -48,14 +51,18 @@ def publish(req: PublishRequest):
     rendered = render_document(req.content, req.content_type, req.title)
     if len(rendered.encode()) > storage.MAX_RENDERED_SIZE:
         raise HTTPException(413, "渲染后页面超过 16 MiB 上限")
-    result = storage.publish(
-        source_path=req.source_path,
-        title=req.title,
-        favicon=req.favicon,
-        content=req.content,
-        content_type=req.content_type,
-        label=req.label,
-    )
+    try:
+        result = storage.publish(
+            source_path=req.source_path,
+            title=req.title,
+            favicon=req.favicon,
+            content=req.content,
+            content_type=req.content_type,
+            label=req.label,
+            artifact_id=req.artifact_id,
+        )
+    except KeyError:
+        raise HTTPException(404, "要更新的 artifact 不存在(可能已被删除)")
     return {**result, "url": f"/a/{result['artifact_id']}"}
 
 
