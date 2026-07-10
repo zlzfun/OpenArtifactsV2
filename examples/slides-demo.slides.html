@@ -1,0 +1,111 @@
+<style>
+  /* 设计计划 —— 配色: 石板蓝灰系
+     --paper #f2f5f8 页面底 / --card #ffffff 卡片 / --ink #1b2836 正文
+     --muted #5f7183 次要 / --accent #2f6db8 钢蓝 / --warm #c05f33 对比强调
+     字体: 系统黑体栈,展示角色靠字重与字号拉开
+     版式: 每页一个观点,左对齐,窄标签 + 大标题 + 少量要点 */
+  body { background: #f2f5f8; color: #1b2836; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; }
+  .slide h1 { font-size: 2.6rem; font-weight: 700; line-height: 1.2; margin: 0.4rem 0; text-wrap: balance; }
+  .slide h2 { font-size: 1.9rem; font-weight: 700; line-height: 1.25; margin: 0.3rem 0 1rem; text-wrap: balance; }
+  .slide p, .slide li { font-size: 1.05rem; line-height: 1.65; color: #33465a; }
+  .kicker { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.14em; color: #2f6db8; text-transform: uppercase; }
+  .lead { font-size: 1.25rem; color: #5f7183; }
+  ul.points { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.7rem; }
+  ul.points li { padding-left: 1.3rem; position: relative; }
+  ul.points li::before { content: ""; position: absolute; left: 0; top: 0.62rem; width: 0.55rem; height: 0.55rem; border-radius: 2px; background: #2f6db8; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem; }
+  .card { background: #ffffff; border: 1px solid #dbe3ea; border-radius: 10px; padding: 1.2rem 1.4rem; }
+  .card h3 { margin: 0 0 0.6rem; font-size: 1.15rem; }
+  .card p { margin: 0.3rem 0; font-size: 0.95rem; }
+  kbd { font-family: ui-monospace, Menlo, monospace; font-size: 0.85em; background: #e5ebf1; border: 1px solid #c9d4de; border-bottom-width: 2px; border-radius: 5px; padding: 0.1em 0.45em; }
+  .accent-page { background: #204a75; }
+  .accent-page .kicker { color: #9dc3ec; }
+  .accent-page h1, .accent-page h2 { color: #f4f8fc; }
+  .accent-page p { color: #c3d5e8; }
+</style>
+
+<section class="slide accent-page">
+  <p class="kicker">OpenArtifacts</p>
+  <h1>HTML Slides:一份内容,两种看法</h1>
+  <p class="lead">放映给同事看,链接发出去随手滚动读。</p>
+</section>
+
+<section class="slide">
+  <p class="kicker">动机</p>
+  <h2>展示和阅读是两种场景</h2>
+  <ul class="points">
+    <li><strong>展示现场</strong>:投影或共享屏幕,一次一个观点,讲的人控制节奏。</li>
+    <li><strong>会后传阅</strong>:收到链接的人想快速上下滚动,不想按 20 次方向键。</li>
+    <li>过去只能二选一;slides 类型让同一个 URL 同时满足两者。</li>
+  </ul>
+</section>
+
+<section class="slide">
+  <p class="kicker">机制</p>
+  <h2>同一份 DOM,一个旋钮</h2>
+  <div class="cols">
+    <div class="card">
+      <h3>放映模式</h3>
+      <p>固定 1280×720 画布,scale 适配窗口。</p>
+      <p>根字号 24px,投影级排版。</p>
+      <p>一次一页,键盘 / 点击 / 触摸翻页。</p>
+    </div>
+    <div class="card">
+      <h3>滚动模式</h3>
+      <p>去掉画布约束,section 自然高度。</p>
+      <p>根字号 17px,文档级排版。</p>
+      <p>52rem 列宽,连贯长页面。</p>
+    </div>
+  </div>
+  <p style="margin-top:1.2rem">内容全用 <strong>rem</strong> + 流式布局,切换模式只改根字号,整套排版自动成立。</p>
+</section>
+
+<section class="slide canvas">
+  <!-- canvas 逃生舱示例:像素画布,px 单位,滚动模式下整页等比缩放 -->
+  <svg viewBox="0 0 1280 720" width="1280" height="720" font-family="-apple-system, 'PingFang SC', sans-serif">
+    <rect width="1280" height="720" fill="#1b2836"/>
+    <text x="90" y="100" fill="#9dc3ec" font-size="20" letter-spacing="4">渲染链路</text>
+    <text x="90" y="150" fill="#f4f8fc" font-size="40" font-weight="700">.slides.html 从发布到两种视图</text>
+    <g font-size="22" fill="#f4f8fc" text-anchor="middle">
+      <rect x="90" y="280" width="240" height="110" rx="12" fill="#204a75"/>
+      <text x="210" y="328">publish.py</text>
+      <text x="210" y="360" font-size="16" fill="#9dc3ec">content_type: slides</text>
+      <rect x="430" y="280" width="240" height="110" rx="12" fill="#204a75"/>
+      <text x="550" y="328">render.py</text>
+      <text x="550" y="360" font-size="16" fill="#9dc3ec">注入统一运行时</text>
+      <rect x="770" y="180" width="240" height="110" rx="12" fill="#2f6db8"/>
+      <text x="890" y="228">放映模式</text>
+      <text x="890" y="260" font-size="16" fill="#c3d5e8">画布 + 翻页</text>
+      <rect x="770" y="390" width="240" height="110" rx="12" fill="#c05f33"/>
+      <text x="890" y="438">滚动模式</text>
+      <text x="890" y="470" font-size="16" fill="#f2d5c6">连贯文档流</text>
+    </g>
+    <g stroke="#5f7183" stroke-width="3" fill="none">
+      <path d="M330 335 H 430"/>
+      <path d="M670 335 C 720 335 720 235 770 235"/>
+      <path d="M670 335 C 720 335 720 445 770 445"/>
+    </g>
+    <text x="90" y="640" fill="#5f7183" font-size="18">本页是 class="slide canvas":像素画布,滚动模式下作为等比图块嵌入文档流。</text>
+  </svg>
+</section>
+
+<section class="slide">
+  <p class="kicker">连贯性</p>
+  <h2>滚动模式不是"讲义视图"</h2>
+  <ul class="points">
+    <li>section 自动高度,半空的页不会留下大块死白。</li>
+    <li>背景在 body 上,页与页之间没有接缝;强调页的背景成为分节色块。</li>
+    <li>两种模式共享阅读位置:滚到第几节,切回放映就从第几页继续。</li>
+  </ul>
+</section>
+
+<section class="slide">
+  <p class="kicker">操作</p>
+  <h2>放映时的控制</h2>
+  <ul class="points">
+    <li>翻页:<kbd>←</kbd> <kbd>→</kbd> <kbd>空格</kbd>,或点击屏幕左右边缘,或触摸滑动。</li>
+    <li>右下角 HUD:页码、模式切换、全屏。</li>
+    <li>地址栏 <kbd>#/3</kbd> 直达第 3 页,两种模式通用。</li>
+    <li>打印(⌘P)自动切滚动排版,每节一页,直接存讲义 PDF。</li>
+  </ul>
+</section>

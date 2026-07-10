@@ -29,6 +29,13 @@ def main() -> int:
     parser.add_argument("--favicon", default="📄", help="浏览器标签图标(1-2 个 emoji)")
     parser.add_argument("--label", default=None, help="本次版本的简短说明")
     parser.add_argument(
+        "--type",
+        dest="content_type",
+        choices=["html", "markdown", "slides"],
+        default=None,
+        help="内容类型;默认按扩展名推断(*.slides.html → slides)",
+    )
+    parser.add_argument(
         "--server",
         default=os.environ.get("OPEN_ARTIFACTS_SERVER", "http://127.0.0.1:8787"),
     )
@@ -39,12 +46,19 @@ def main() -> int:
         print(f"错误: 文件不存在: {path}", file=sys.stderr)
         return 1
     suffix = path.suffix.lower()
-    if suffix in (".html", ".htm"):
+    if args.content_type:
+        content_type = args.content_type
+    elif path.name.lower().endswith((".slides.html", ".slides.htm")):
+        content_type = "slides"
+    elif suffix in (".html", ".htm"):
         content_type = "html"
     elif suffix == ".md":
         content_type = "markdown"
     else:
         print(f"错误: 仅支持 .html/.htm/.md,收到 {suffix}", file=sys.stderr)
+        return 1
+    if content_type == "slides" and suffix not in (".html", ".htm"):
+        print("错误: slides 仅支持 HTML 文件", file=sys.stderr)
         return 1
 
     payload = json.dumps(

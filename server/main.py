@@ -39,7 +39,7 @@ class PublishRequest(BaseModel):
     title: str = Field(min_length=1, max_length=200)
     favicon: str = Field(default="📄", max_length=8)
     content: str
-    content_type: str = Field(pattern="^(html|markdown)$")
+    content_type: str = Field(pattern="^(html|markdown|slides)$")
     label: str | None = Field(default=None, max_length=60)
 
 

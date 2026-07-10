@@ -49,6 +49,10 @@ python3 skill/open-artifacts/scripts/publish.py page.html --title "我的页面"
 - 上传 `.md` 自动渲染为带样式的 HTML;上传 HTML 只需写 body 内容,服务端包 document shell
 - 渲染后页面上限 16 MiB
 
+## HTML Slides(本项目扩展,官方没有)
+
+`*.slides.html`(或 `--type slides`)发布为放映页:服务端注入统一的翻页运行时,同一份内容获得两种视图——**放映模式**(固定 16:9 画布左右翻页,键盘/点击/触摸,页码进度条,`#/3` 直达,全屏)和**滚动模式**(连贯长页面,非讲义式堆叠),右下角 HUD 切换,打印自动转为每节一页的讲义 PDF。内容契约见 `skill/open-artifacts/SKILL.md`:每页一个 `<section class="slide">`,rem 尺寸 + 流式布局;精确制图页用 `<section class="slide canvas">` 内放整页 SVG。示例:`examples/slides-demo.slides.html`
+
 ## 环境变量
 
 | 变量 | 作用 |
